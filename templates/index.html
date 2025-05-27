@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMaster Pro - AI-Powered Task Management</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5a67d8;
+            --secondary: #764ba2;
+            --success: #48bb78;
+            --warning: #ed8936;
+            --error: #f56565;
+            --info: #4299e1;
+            --bg-dark: #1a202c;
+            --bg-light: #f7fafc;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --border: #e2e8f0;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+            flex: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chat-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: var(--gradient);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .chat-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #48bb78;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            max-height: 500px;
+            min-height: 400px;
+        }
+
+        .message {
+            margin-bottom: 1.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message.bot {
+            text-align: left;
+        }
+
+        .message-content {
+            display: inline-block;
+            max-width: 80%;
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: var(--gradient);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.bot .message-content {
+            background: #f8f9fa;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 5px;
+        }
+
+        .message.bot.success .message-content {
+            background: #f0fff4;
+            border-color: var(--success);
+            color: #22543d;
+        }
+
+        .message.bot.error .message-content {
+            background: #fff5f5;
+            border-color: var(--error);
+            color: #742a2a;
+        }
+
+        .message.bot.warning .message-content {
+            background: #fffaf0;
+            border-color: var(--warning);
+            color: #744210;
+        }
+
+        .message.bot.info .message-content {
+            background: #ebf8ff;
+            border-color: var(--info);
+            color: #2a4365;
+        }
+
+        .chat-input {
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-top: 1px solid var(--border);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .input-container {
+            flex: 1;
+            position: relative;
+        }
+
+        #userInput {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border: 2px solid var(--border);
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            resize: none;
+            min-height: 50px;
+            max-height: 120px;
+        }
+
+        #userInput:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        #sendBtn {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        #sendBtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        #sendBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .widget {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .widget-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .widget-header i {
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        .widget-header h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .quick-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .quick-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: typingPulse 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typingPulse {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: float 6s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-10vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .message-timestamp {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            opacity: 0.7;
+        }
+
+        .task-preview {
+            background: #f8f9fa;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .task-preview h4 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .priority-high { color: var(--error); }
+        .priority-medium { color: var(--warning); }
+        .priority-low { color: var(--success); }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 32, 44, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+            border-left: 4px solid var(--success);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            border-left-color: var(--error);
+        }
+
+        .notification.warning {
+            border-left-color: var(--warning);
+        }
+
+        .scrollbar-custom {
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) transparent;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-robot"></i> TaskMaster Pro</h1>
+            <p>AI-Powered Task Management at Your Fingertips</p>
+        </div>
+
+        <div class="main-content">
+            <div class="chat-section">
+                <div class="chat-header">
+                    <h2><i class="fas fa-comments"></i> Chat Assistant</h2>
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <span>AI Assistant Online</span>
+                    </div>
+                </div>
+
+                <div class="chat-messages scrollbar-custom" id="chatMessages">
+                    <div class="message bot welcome">
+                        <div class="message-content">
+                            <strong>🎉 Welcome to TaskMaster Pro!</strong><br><br>
+                            I'm your AI task management assistant. I can help you create, organize, and manage your tasks with natural language commands.<br><br>
+                            Try saying: <em>"Add a new task"</em> or <em>"Show my tasks"</em>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="typing-indicator" id="typingIndicator">
+                    <i class="fas fa-robot"></i>
+                    <span>AI is thinking</span>
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+
+                <div class="chat-input">
+                    <div class="input-group">
+                        <div class="input-container">
+                            <textarea 
+                                id="userInput" 
+                                placeholder="Type your message... (e.g., 'add buy groceries' or 'show my tasks')"
+                                rows="1"
+                            ></textarea>
+                        </div>
+                        <button id="sendBtn" type="button">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="widget">
+                    <div class="widget-header">
+                        <i class="fas fa-bolt"></i>
+                        <h3>Quick Actions</h3>
+                    </div>
+                    <div class="quick-actions">
+                        <button class="quick-btn" onclick="quickCommand('add task')">
+                            <i class="fas fa-plus"></i>
+                            Add Task
+                        </button>
+                        <button class="quick-btn" onclick="quickCommand('show tasks')">
+                            <i class="fas fa-list"></i>
+                            View Tasks
+                        </button>
+                        <button class="quick-btn" onclick="quickCommand('stats')">
+                            <i class="fas fa-chart-pie"></i>
+                            Dashboard
+                        </button>
+                        <button class="quick-btn" onclick="quickCommand('help')">
+                            <i class="fas fa-question-circle"></i>
+                            Help
+                        </button>
+                    </div>
+                </div>
+
+                <div class="widget">
+                    <div class="widget-header">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Task Statistics</h3>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalTasks">0</div>
+                            <div class="stat-label">Total Tasks</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="completedTasks">0</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="pendingTasks">0</div>
+                            <div class="stat-label">Pending</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="completionRate">0%</div>
+                            <div class="stat-label">Completion Rate</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="widget">
+                    <div class="widget-header">
+                        <i class="fas fa-lightbulb"></i>
+                        <h3>Pro Tips</h3>
+                    </div>
+                    <div id="tips">
+                        <p><strong>💡 Natural Language:</strong> Just type naturally! "I need to buy groceries tomorrow" works perfectly.</p>
+                        <p><strong>🎯 Quick Commands:</strong> Use shortcuts like "add", "complete", "delete" for faster actions.</p>
+                        <p><strong>📊 Stay Organized:</strong> Set priorities and due dates to never miss deadlines.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="notification" id="notification">
+        <span id="notificationText"></span>
+    </div>
+
+    <script>
+        class TaskMasterPro {
+            constructor() {
+                this.sessionId = this.generateSessionId();
+                this.initializeElements();
+                this.bindEvents();
+                this.createParticles();
+                this.updateStats();
+                this.startTipRotation();
+            }
+
+            generateSessionId() {
+                return 'session_' + Math.random().toString(36).substr(2, 9);
+            }
+
+            initializeElements() {
+                this.chatMessages = document.getElementById('chatMessages');
+                this.userInput = document.getElementById('userInput');
+                this.sendBtn = document.getElementById('sendBtn');
+                this.typingIndicator = document.getElementById('typingIndicator');
+                this.loadingOverlay = document.getElementById('loadingOverlay');
+                this.notification = document.getElementById('notification');
+                this.notificationText = document.getElementById('notificationText');
+            }
+
+            bindEvents() {
+                this.sendBtn.addEventListener('click', () => this.sendMessage());
+                this.userInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+
+                // Auto-resize textarea
+                this.userInput.addEventListener('input', () => {
+                    this.userInput.style.height = 'auto';
+                    this.userInput.style.height = Math.min(this.userInput.scrollHeight, 120) + 'px';
+                });
+
+                // Update stats periodically
+                setInterval(() => this.updateStats(), 10000);
+            }
+
+            createParticles() {
+                const particleContainer = document.getElementById('particles');
+                for (let i = 0; i < 20; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 6 + 's';
+                    particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                    particleContainer.appendChild(particle);
+                }
+            }
+
+            async sendMessage() {
+                const message = this.userInput.value.trim();
+                if (!message) return;
+
+                this.addMessage(message, 'user');
+                this.userInput.value = '';
+                this.userInput.style.height = 'auto';
+                
+                this.showTyping();
+                this.sendBtn.disabled = true;
+
+                try {
+                    const formData = new FormData();
+                    formData.append('message', message);
+                    formData.append('session_id', this.sessionId);
+
+                    const response = await fetch('/get', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+                    
+                    setTimeout(() => {
+                        this.hideTyping();
+                        this.addMessage(data.response, 'bot', data.type);
+                        
+                        if (data.task) {
+                            this.addTaskPreview(data.task);
+                        }
+                        
+                        if (data.tasks) {
+                            this.updateStats();
+                        }
+                        
+                        this.sendBtn.disabled = false;
+                        this.userInput.focus();
+                    }, 1000 + Math.random() * 1000); // Realistic AI thinking time
+
+                } catch (error) {
+                    this.hideTyping();
+                    this.addMessage('❌ Connection error. Please try again.', 'bot', 'error');
+                    this.sendBtn.disabled = false;
+                    console.error('Error:', error);
+                }
+            }
+
+            addMessage(content, sender, type = 'default') {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}`;
+                
+                if (type && type !== 'default') {
+                    messageDiv.classList.add(type);
+                }
+
+                const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        ${this.formatMessage(content)}
+                    </div>
+                    <div class="message-timestamp">${timestamp}</div>
+                `;
+
+                this.chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+
+                // Show notification for important messages
+                if (type === 'success' || type === 'error') {
+                    this.showNotification(content, type);
+                }
+            }
+
+            formatMessage(content) {
+                // Convert markdown-style formatting
+                return content
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/`(.*?)`/g, '<code>$1</code>')
+                    .replace(/\n/g, '<br>');
+            }
+
+            addTaskPreview(task) {
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'task-preview';
+                previewDiv.innerHTML = `
+                    <h4>📋 ${task.title}</h4>
+                    <div class="task-meta">
+                        <span><i class="fas fa-tag"></i> ${task.category}</span>
+                        <span class="priority-${task.priority.toLowerCase()}">
+                            <i class="fas fa-flag"></i> ${task.priority}
+                        </span>
+                        ${task.due_date ? `<span><i class="fas fa-calendar"></i> ${task.due_date}</span>` : ''}
+                    </div>
+                `;
+                
+                this.chatMessages.appendChild(previewDiv);
+                this.scrollToBottom();
+            }
+
+            showTyping() {
+                this.typingIndicator.style.display = 'flex';
+                this.scrollToBottom();
+            }
+
+            hideTyping() {
+                this.typingIndicator.style.display = 'none';
+            }
+
+            scrollToBottom() {
+                setTimeout(() => {
+                    this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+                }, 100);
+            }
+
+            showNotification(message, type = 'success') {
+                this.notificationText.textContent = message.replace(/[🎉✅❌⚠️]/g, '').trim();
+                this.notification.className = `notification ${type}`;
+                this.notification.classList.add('show');
+                
+                setTimeout(() => {
+                    this.notification.classList.remove('show');
+                }, 4000);
+            }
+
+            async updateStats() {
+                try {
+                    const response = await fetch('/api/tasks');
+                    const data = await response.json();
+                    
+                    const total = data.total;
+                    const completed = data.tasks.filter(t => t.status === 'Completed').length;
+                    const pending = total - completed;
+                    const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+                    document.getElementById('totalTasks').textContent = total;
+                    document.getElementById('completedTasks').textContent = completed;
+                    document.getElementById('pendingTasks').textContent = pending;
+                    document.getElementById('completionRate').textContent = completionRate + '%';
+                    document.getElementById('progressFill').style.width = completionRate + '%';
+
+                } catch (error) {
+                    console.error('Failed to update stats:', error);
+                }
+            }
+
+            startTipRotation() {
+                const tips = [
+                    "<strong>💡 Natural Language:</strong> Just type naturally! 'I need to buy groceries tomorrow' works perfectly.",
+                    "<strong>🎯 Quick Commands:</strong> Use shortcuts like 'add', 'complete', 'delete' for faster actions.",
+                    "<strong>📊 Stay Organized:</strong> Set priorities and due dates to never miss deadlines.",
+                    "<strong>🔍 Smart Search:</strong> Find tasks easily with 'search' or 'find' commands.",
+                    "<strong>📈 Track Progress:</strong> Use 'stats' to see your productivity dashboard.",
+                    "<strong>⚡ Power User:</strong> Try 'overdue tasks' to see what needs immediate attention."
+                ];
+
+                let currentTip = 0;
+                const tipsElement = document.getElementById('tips');
+                
+                setInterval(() => {
+                    currentTip = (currentTip + 1) % tips.length;
+                    tipsElement.innerHTML = `<p>${tips[currentTip]}</p>`;
+                }, 8000);
+            }
+        }
+
+        function quickCommand(command) {
+            const app = window.taskMasterPro;
+            app.userInput.value = command;
+            app.sendMessage();
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            window.taskMasterPro = new TaskMasterPro();
+        });
+
+        // Add some visual flair
+        document.addEventListener('mousemove', (e) => {
+            const particles = document.querySelectorAll('.particle');
+            particles.forEach((particle, index) => {
+                if (Math.random() > 0.98) {
+                    particle.style.transform = `translate(${(e.clientX - window.innerWidth/2) * 0.01}px, ${(e.clientY - window.innerHeight/2) * 0.01}px)`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
