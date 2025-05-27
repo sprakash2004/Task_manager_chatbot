@@ -35,7 +35,7 @@ Project Structure
 
 ├── templates/
 
-│   └── index.html     # Frontend interface
+│        └── index.html     # Frontend interface
 
 └── README.md          # This file
 
