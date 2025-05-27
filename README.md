@@ -1,55 +1,61 @@
-TaskMaster Pro
+# TaskMaster Pro
+
 AI-powered task management web app with natural language chatbot interface.
-Features
 
-Natural Language Chat: Talk to the AI assistant to manage tasks
-Smart Task Management: Create, complete, delete, and search tasks
-Categories & Priorities: Organize tasks by type and importance
-Due Date Tracking: Set deadlines and track overdue tasks
-Real-time Dashboard: View task statistics and progress
-Responsive Design: Works on desktop and mobile
+## Features
 
-Quick Start
+- **Natural Language Chat**: Talk to the AI assistant to manage tasks
+- **Smart Task Management**: Create, complete, delete, and search tasks
+- **Categories & Priorities**: Organize tasks by type and importance
+- **Due Date Tracking**: Set deadlines and track overdue tasks
+- **Real-time Dashboard**: View task statistics and progress
+- **Responsive Design**: Works on desktop and mobile
 
-Install Flask
-bashpip install flask
+## Quick Start
 
-Run the app
-bashpython app.py
+1. **Install Flask**
+   ```bash
+   pip install flask
+   ```
 
-Open browser
-Go to http://localhost:5000
+2. **Run the app**
+   ```bash
+   python app.py
+   ```
 
-Usage Examples
+3. **Open browser**
+   Go to `http://localhost:5000`
 
-"Add buy groceries tomorrow"
-"Show my tasks"
-"Complete the Flask project"
-"Search for work tasks"
-"Show stats"
-"Delete groceries task"
+## Usage Examples
 
-Project Structure
+- "Add buy groceries tomorrow"
+- "Show my tasks"
+- "Complete the Flask project"
+- "Search for work tasks"
+- "Show stats"
+- "Delete groceries task"
 
+## Project Structure
+
+```
 ├── app.py              # Flask backend
-
 ├── templates/
-
-│        └── index.html     # Frontend interface
-
+│   └── index.html     # Frontend interface
 └── README.md          # This file
+```
 
-API Endpoints
+## API Endpoints
 
-GET /api/tasks - Get all tasks and stats
-GET /api/export - Export tasks as JSON
-POST /get - Chat with AI assistant
+- `GET /api/tasks` - Get all tasks and stats
+- `GET /api/export` - Export tasks as JSON
+- `POST /get` - Chat with AI assistant
 
-Tech Stack
+## Tech Stack
 
-Backend: Flask, Python
-Frontend: HTML, CSS, JavaScript
-Features: Real-time chat, task management, statistics
+- **Backend**: Flask, Python
+- **Frontend**: HTML, CSS, JavaScript
+- **Features**: Real-time chat, task management, statistics
 
+---
 
 Built with Flask and modern web technologies.
