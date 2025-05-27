@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 # Enhanced task storage with metadata
 tasks = {}
-categories = ["Work", "Personal", "Shopping", "Health", "Learning", "Other"]
+categories = ["Work", "Personal", "Shopping", "Health", "Learning", "Other","Coding"]
 task_stats = defaultdict(int)
 
 class TaskManager:
