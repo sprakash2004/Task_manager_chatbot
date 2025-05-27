@@ -30,10 +30,15 @@ Usage Examples
 "Delete groceries task"
 
 Project Structure
+
 ├── app.py              # Flask backend
+
 ├── templates/
+
 │   └── index.html     # Frontend interface
+
 └── README.md          # This file
+
 API Endpoints
 
 GET /api/tasks - Get all tasks and stats
